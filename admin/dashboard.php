@@ -167,8 +167,17 @@ if ($stmt = $pdo->prepare($sql)) {
             </div>
         </div>
     </nav>
-    <h1 style="margin-left:20px">Hi, <b><?php echo htmlspecialchars($_SESSION["username"]); ?></b>. Welcome to the dashboard.</h1>
-    
+    <div class="row">
+    <div class="col" style="display: flex; justify-content: center; align-items: center;">
+    <h1>Hi, <b><?php echo htmlspecialchars($_SESSION["username"]); ?></b>. Welcome to the dashboard.</h1>
+    </div>
+
+    <div class="col" style="display: flex; justify-content: center; align-items: center; margin-top: 5px;">
+        <button class="btn btn-primary" onclick="printToPDF()">Print to PDF</button>
+    </div>
+
+  </div>
+ 
 <div id="dashboardContent">
     <!--Start Dashboard-->
     <div class="flex-container">
@@ -235,15 +244,8 @@ if ($stmt = $pdo->prepare($sql)) {
             <div class="col">
                 <div class="card">
                     <div class="card-body">
-                        <div class="col">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h3>Login Statistics</h3>
-                                    <canvas id="loginChart" width="400" height="200"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
+                        <h3>Login Statistics</h3>
+                        <canvas id="loginChart" width="400" height="200"></canvas>
                         <table id="recentLogin" class="table table-bordered">
                             <thead>
                                 <tr>
@@ -268,9 +270,9 @@ if ($stmt = $pdo->prepare($sql)) {
                 </div>
             </div>
         </div>
-        <button class="btn btn-primary" onclick="printToPDF()">Print to PDF</button>
     </div>
 </div>
+
 
 
 
