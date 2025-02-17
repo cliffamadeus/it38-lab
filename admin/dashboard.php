@@ -129,6 +129,13 @@ if ($stmt = $pdo->prepare($sql)) {
             margin-left: 2rem;
             text-align: center;
         }
+        .chart-container {
+            width: 400px;
+            height: 400px;
+            display: block; /* Ensure it's treated as a block element */
+            margin: 0 auto; /* Center the chart if needed */
+        }
+
     </style>
 </head>
 <body>
@@ -222,7 +229,7 @@ if ($stmt = $pdo->prepare($sql)) {
                 <div class="card">
                     <div class="card-body">
                         <h3>User Account Distribution</h3>
-                        <canvas id="userTypeChart" width="400" height="400"></canvas>
+                        <canvas id="userTypeChart" class="chart-container"></canvas>
                         <table id="userAccounts" class="table table-bordered">
                             <thead>
                                 <tr>
@@ -381,8 +388,8 @@ if ($stmt = $pdo->prepare($sql)) {
                 datasets: [{
                     label: 'User Account Distribution',
                     data: pieData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                    hoverBackgroundColor: ['#FF7B93', '#6AB8F2', '#FFD700']
+                    backgroundColor: ['#28a745', '#007bff', '#dc3545'], 
+                    hoverBackgroundColor: ['#218838', '#0056b3', '#c82333']
                 }]
             },
             options: {
