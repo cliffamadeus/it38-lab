@@ -257,6 +257,9 @@ if ($stmt = $pdo->prepare($sql)) {
 
 
 <script>
+    let table1 = new DataTable('#userAccounts');
+    let table2 = new DataTable('#recentLogin');
+    
     function printToPDF() {
         const element = document.getElementById("dashboardContent"); // Capture only the dashboard content
         html2canvas(element, { scale: 2 }).then((canvas) => {
