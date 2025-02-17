@@ -48,6 +48,8 @@ if ($stmt = $pdo->prepare($sql)) {
     unset($stmt);
 }
 
+
+
 // Fetch the most recent login per user
 $recentLogins = [];
 $sql = "
@@ -75,7 +77,6 @@ if ($stmt = $pdo->prepare($sql)) {
     unset($stmt);
 }
 
-
 // Fetch login statistics (e.g., daily logins)
 $loginStats = [];
 $sql = "SELECT DATE(login_time) as login_date, COUNT(*) as login_count FROM login_logs GROUP BY login_date ORDER BY login_date DESC LIMIT 30";
@@ -87,6 +88,7 @@ if ($stmt = $pdo->prepare($sql)) {
     }
     unset($stmt);
 }
+
 
 ?>
 
@@ -219,7 +221,8 @@ if ($stmt = $pdo->prepare($sql)) {
             <div class="col">
                 <div class="card">
                     <div class="card-body">
-                        <h3>User Accounts</h3>
+                        <h3>User Account Distribution</h3>
+                        <canvas id="userTypeChart" width="400" height="400"></canvas>
                         <table id="userAccounts" class="table table-bordered">
                             <thead>
                                 <tr>
@@ -273,9 +276,6 @@ if ($stmt = $pdo->prepare($sql)) {
     </div>
 </div>
 
-
-
-
 <script>
     let table1 = new DataTable('#userAccounts');
     let table2 = new DataTable('#recentLogin');
@@ -328,15 +328,15 @@ if ($stmt = $pdo->prepare($sql)) {
             row.querySelector('.time-elapsed').textContent = timeElapsedStr;
         });
 
-        // Chart Data
+        // Chart Data for Line Chart (Login Stats)
         const loginStats = <?php echo json_encode($loginStats); ?>;
         
         // Prepare data for the chart
         const labels = loginStats.map(stat => stat.login_date);
-        const loginData = loginStats.map(stat => stat.login_count);  // Fixed the issue here: login data -> loginData
+        const loginData = loginStats.map(stat => stat.login_count);
 
-        const ctx = document.getElementById('loginChart').getContext('2d');
-        new Chart(ctx, {
+        const lineChartCtx = document.getElementById('loginChart').getContext('2d');
+        new Chart(lineChartCtx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -367,6 +367,41 @@ if ($stmt = $pdo->prepare($sql)) {
                 }
             }
         });
+
+        // Data for the Pie Chart (User Account Distribution)
+        const userStats = <?php echo json_encode($userStats); ?>;
+        const pieLabels = ['Admin', 'User', 'Temp User'];
+        const pieData = [userStats['admin'], userStats['user'], userStats['temp-user']];
+
+        const pieChartCtx = document.getElementById('userTypeChart').getContext('2d');
+        new Chart(pieChartCtx, {
+            type: 'pie',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    label: 'User Account Distribution',
+                    data: pieData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                    hoverBackgroundColor: ['#FF7B93', '#6AB8F2', '#FFD700']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
     };
 </script>
 
