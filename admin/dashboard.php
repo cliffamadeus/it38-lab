@@ -48,15 +48,33 @@ if ($stmt = $pdo->prepare($sql)) {
     unset($stmt);
 }
 
-// Fetch recent logins
+// Fetch the most recent login per user
 $recentLogins = [];
-$sql = "SELECT l.login_id, u.username, u.user_type, l.login_time FROM login_logs l JOIN users u ON l.user_id = u.id ORDER BY l.login_time DESC LIMIT 10";
+$sql = "
+    SELECT 
+        u.username, 
+        u.user_type, 
+        MAX(l.login_time) AS login_time
+    FROM 
+        login_logs l 
+    JOIN 
+        users u 
+    ON 
+        l.user_id = u.id
+    GROUP BY 
+        l.user_id, u.username, u.user_type
+    ORDER BY 
+        login_time DESC
+    LIMIT 10
+";
+
 if ($stmt = $pdo->prepare($sql)) {
     if ($stmt->execute()) {
         $recentLogins = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     unset($stmt);
 }
+
 
 // Fetch login statistics (e.g., daily logins)
 $loginStats = [];
@@ -259,7 +277,7 @@ if ($stmt = $pdo->prepare($sql)) {
 <script>
     let table1 = new DataTable('#userAccounts');
     let table2 = new DataTable('#recentLogin');
-    
+
     function printToPDF() {
         const element = document.getElementById("dashboardContent"); // Capture only the dashboard content
         html2canvas(element, { scale: 2 }).then((canvas) => {
