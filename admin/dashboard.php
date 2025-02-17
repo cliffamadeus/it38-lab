@@ -57,6 +57,19 @@ if ($stmt = $pdo->prepare($sql)) {
     }
     unset($stmt);
 }
+
+// Fetch login statistics (e.g., daily logins)
+$loginStats = [];
+$sql = "SELECT DATE(login_time) as login_date, COUNT(*) as login_count FROM login_logs GROUP BY login_date ORDER BY login_date DESC LIMIT 30";
+if ($stmt = $pdo->prepare($sql)) {
+    if ($stmt->execute()) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $loginStats[] = $row;
+        }
+    }
+    unset($stmt);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -77,6 +90,9 @@ if ($stmt = $pdo->prepare($sql)) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/2.2.1/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.2.1/js/dataTables.bootstrap5.js"></script>
+
+    <!--Chart JS-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         .flex-container {
@@ -201,11 +217,18 @@ if ($stmt = $pdo->prepare($sql)) {
             <div class="col">
                 <div class="card">
                     <div class="card-body">
-                        <h3>Recent Logins</h3>
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3>Login Statistics</h3>
+                                    <canvas id="loginChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
                         <table id="recentLogin" class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>No.</th>
                                     <th>Username</th>
                                     <th>Role</th>
                                     <th>Login Timestamp</th>
@@ -215,7 +238,6 @@ if ($stmt = $pdo->prepare($sql)) {
                             <tbody>
                                 <?php foreach ($recentLogins as $login): ?>
                                 <tr data-login-time="<?php echo htmlspecialchars($login['login_time']); ?>">
-                                    <td><?php echo htmlspecialchars($login['login_id']); ?></td>
                                     <td><?php echo htmlspecialchars($login['username']); ?></td>
                                     <td><?php echo htmlspecialchars($login['user_type']); ?></td>
                                     <td><?php echo date("Y-m-d H:i:s", strtotime($login['login_time'])); ?></td>
@@ -249,11 +271,9 @@ if ($stmt = $pdo->prepare($sql)) {
         });
     }
 
-
-
     function timeElapsed(timestamp) {
-        const currentTime = Date.now() / 1000;
-        const timeDiff = currentTime - new Date(timestamp).getTime() / 1000;
+        const currentTime = Date.now() / 1000; // Get current time in seconds
+        const timeDiff = currentTime - new Date(timestamp).getTime() / 1000; // Convert timestamp to seconds
 
         const intervals = {
             year: 31536000,
@@ -284,10 +304,48 @@ if ($stmt = $pdo->prepare($sql)) {
             const timeElapsedStr = timeElapsed(loginTime);
             row.querySelector('.time-elapsed').textContent = timeElapsedStr;
         });
-    }
 
-    let table1 = new DataTable('#userAccounts');
-    let table2 = new DataTable('#recentLogin');
+        // Chart Data
+        const loginStats = <?php echo json_encode($loginStats); ?>;
+        
+        // Prepare data for the chart
+        const labels = loginStats.map(stat => stat.login_date);
+        const loginData = loginStats.map(stat => stat.login_count);  // Fixed the issue here: login data -> loginData
+
+        const ctx = document.getElementById('loginChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Logins',
+                    data: loginData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Number of Logins'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    };
 </script>
+
 </body>
 </html>
