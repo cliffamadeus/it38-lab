@@ -129,8 +129,8 @@ if ($stmt = $pdo->prepare($sql)) {
         .chart-container {
             width: 400px;
             height: 400px;
-            display: block; /* Ensure it's treated as a block element */
-            margin: 0 auto; /* Center the chart if needed */
+            display: block; 
+            margin: 0 auto; 
         }
 
     </style>
